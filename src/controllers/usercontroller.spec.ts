@@ -1,6 +1,6 @@
 import { execute } from "../services/dbconnect";
 import { comparePass, hashPass } from "../services/passwordHash";
-import { loginUser, registerUser } from "./userController";
+import { loginUser, registerUser, updateUser } from "./userController";
 
 // Mock the hashPass function
 jest.mock("../services/passwordHash.ts", () => ({
@@ -18,14 +18,15 @@ jest.mock("../services/tokenGenerator.ts", () => ({
   generateToken: jest.fn().mockReturnValue("mockedToken"),
 }));
 
-describe("registerUser controller", () => {
+describe("users controller", () => {
   it("should register a user", async () => {
     // Arrange
     const req: any = {
       body: {
-        fullName: "John Doe",
+        user_name: "jonathan",
+        cohort_number: 20,
+        email: "caleb.baraka@thejitu.com",
         password: "@Santa2023",
-        email: "john@example.com",
       },
     } as any;
 
@@ -53,7 +54,7 @@ describe("registerUser controller", () => {
   it(" should login a user ", async () => {
     const reqLogin: any = {
       body: {
-        email: "john@example.com",
+        email: "caleb.baraka@thejitu.com",
         password: "@Santa2023",
       },
     };
@@ -88,9 +89,10 @@ describe("registerUser controller", () => {
     // Arrange
     const reqRegister: any = {
       body: {
-        fullName: "John Doe",
-        password: "@Qwerty123",
-        email: "john@example.com",
+        user_name: "jonathan",
+        cohort_number: 20,
+        email: "caleb.baraka@thejitu.com",
+        password: "@Santa2023",
       },
     };
 
@@ -123,9 +125,10 @@ describe("registerUser controller", () => {
     // Arrange
     const reqRegister: any = {
       body: {
-        fullName: "John Doe",
-        password: "Short", // Invalid password for validation error
-        email: "john@example.com",
+        user_name: "jonathan",
+        cohort_number: 20,
+        email: "caleb.baraka@thejitu.com",
+        password: "shortpassword",
       },
     };
 
@@ -141,7 +144,7 @@ describe("registerUser controller", () => {
     expect(resRegister.status).toHaveBeenCalledWith(400);
     expect(resRegister.json).toHaveBeenCalledWith({
       error:
-        "check email or password should be atleast 8 characters long with letters symbols and uppercase",
+        "check email or password ! password should be atleast 8 characters long with letters symbols and uppercase , email should be firstname.lastname@thejitu.com",
     });
   });
 
@@ -149,7 +152,7 @@ describe("registerUser controller", () => {
     // Arrange for login with invalid password
     const reqLoginInvalidPass: any = {
       body: {
-        email: "john@example.com",
+        email: "caleb.baraka@thejitu.com",
         password: "InvalidPassword",
       },
     };
@@ -183,8 +186,8 @@ describe("registerUser controller", () => {
     // Arrange for login with email not in the database
     const reqLoginInvalidEmail: any = {
       body: {
-        email: "nonexistent@example.com",
-        password: "ValidPass123",
+        email: "john.doe@thejitu.com",
+        password: "@ValidPass123",
       },
     };
 
@@ -203,6 +206,86 @@ describe("registerUser controller", () => {
     expect(resLoginInvalidEmail.status).toHaveBeenCalledWith(404);
     expect(resLoginInvalidEmail.json).toHaveBeenCalledWith({
       error: "Account does not exist",
+    });
+  });
+
+  it("update user successfully", async () => {
+    const request = {
+      body: {
+        club_id: "766d395f-fd79-4b81-930c-14a1c32cb3d2",
+        user_name: "John Doe",
+        email: "caleb.baraka@thejitu.com",
+        cohort_number: 20,
+      },
+    };
+
+    const response = {
+      send: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    };
+
+    await updateUser(request as any, response as any);
+
+    expect(execute).toHaveBeenCalledWith("updateUser", {
+      club_id: "766d395f-fd79-4b81-930c-14a1c32cb3d2",
+      user_name: "John Doe",
+      email: "caleb.baraka@thejitu.com",
+      cohort_number: 20,
+    });
+
+    expect(response.send).toHaveBeenCalledWith({
+      message: "User updated successfully",
+    });
+  });
+
+  it("handle validation error", async () => {
+    const request = {
+      body: {
+        // Invalid data to trigger validation error
+      },
+    };
+
+    const response = {
+      send: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    };
+
+    await updateUser(request as any, response as any);
+
+    // Ensure the response is sent with the correct error message and status code
+    expect(response.status).toHaveBeenCalledWith(400);
+    expect(response.send).toHaveBeenCalledWith({
+      error: "check full name & email if they are correct",
+    });
+  });
+
+  test("handle internal server error", async () => {
+    // Mock the execute function to throw an error
+    jest
+      .spyOn(require("../services/dbconnect.ts"), "execute")
+      .mockRejectedValue(new Error("Test error"));
+
+    const request = {
+      body: {
+        cohort_number: 20,
+        club_id: "1a913633-c923-4228-8efd-a77512565eb1",
+        user_name: "caleb",
+        email: "baraka606@student.mmarau.ac.ke",
+      },
+    };
+
+    const response = {
+      send: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    };
+
+    await updateUser(request as any, response as any);
+
+    // Ensure the response is sent with the correct error message and status code
+    expect(response.status).toHaveBeenCalledWith(500);
+    expect(response.send).toHaveBeenCalledWith({
+      error: "Test error",
+      message: "Internal Sever Error",
     });
   });
 });
