@@ -47,16 +47,18 @@ export const getUser = async (req: Request, res: Response) => {
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { user_name, password, email } = req.body;
+    const { user_name, password, email,cohort_number } = req.body;
 
     // console.log(req.body);
 
     const { error } = validateRegisterUser.validate(req.body);
+    // console.log(error);
+    
 
     if (error)
       return res.status(400).json({
         error:
-          "check email or password should be atleast 8 characters long with letters symbols and uppercase",
+          "check email or password ! password should be atleast 8 characters long with letters symbols and uppercase , email should be firstname.lastname@thejitu.com",
       });
 
     const procedure1 = "getUserByEmail";
@@ -81,6 +83,7 @@ export const registerUser = async (req: Request, res: Response) => {
       user_name,
       email,
       password: newPassword,
+      cohort_number,
     };
 
     const procedureName = "registerUser";
@@ -143,7 +146,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { club_id, user_name, email } = req.body;
+    const { club_id, user_name, email,cohort_number } = req.body;
 
     const { error } = validateUpdateuser.validate(req.body);
     if (error)
@@ -155,6 +158,7 @@ export const updateUser = async (req: Request, res: Response) => {
       club_id,
       user_name,
       email,
+      cohort_number,
     };
 
     const procedureName = "updateUser";

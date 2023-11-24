@@ -5,6 +5,7 @@ CREATE  TABLE users (
 	user_name varchar(100) NOT NULL,	
 	email varchar(250) NOT NULL,	
 	isDeleted BIT Default 0,
+	cohort_number int,
 	password varchar(250) NOT NULL,
 )
 

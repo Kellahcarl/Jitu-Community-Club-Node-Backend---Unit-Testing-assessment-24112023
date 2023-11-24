@@ -8,6 +8,7 @@ begin
 	select	club_id,
 			email,
 			user_name,
+			cohort_number,
 			isDeleted
 			
 		
