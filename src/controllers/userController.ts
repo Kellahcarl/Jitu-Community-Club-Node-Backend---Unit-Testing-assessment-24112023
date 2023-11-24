@@ -180,11 +180,11 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     const club_id = req.params.club_id;
     // console.log(id);
-    if (!club_id) return res.status(400).send({ message: "Id is required" });
+    if (!club_id) return res.status(400).send({ error: "Id is required" });
 
     const { error } = validateuserId.validate(req.params);
 
-    if (error) return res.status(400).send({ error: "enter a valid id" });
+    if (error) return res.status(400).send({ error: "Id is required" });
 
     const procedureName = "deleteUser";
     await execute(procedureName, { club_id });

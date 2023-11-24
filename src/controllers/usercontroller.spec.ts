@@ -1,6 +1,11 @@
 import { execute } from "../services/dbconnect";
 import { comparePass, hashPass } from "../services/passwordHash";
-import { loginUser, registerUser, updateUser } from "./userController";
+import {
+  deleteUser,
+  loginUser,
+  registerUser,
+  updateUser,
+} from "./userController";
 
 // Mock the hashPass function
 jest.mock("../services/passwordHash.ts", () => ({
@@ -259,18 +264,10 @@ describe("users controller", () => {
     });
   });
 
-  test("handle internal server error", async () => {
-    // Mock the execute function to throw an error
-    jest
-      .spyOn(require("../services/dbconnect.ts"), "execute")
-      .mockRejectedValue(new Error("Test error"));
-
+  test("delete user successfully", async () => {
     const request = {
-      body: {
-        cohort_number: 20,
+      params: {
         club_id: "1a913633-c923-4228-8efd-a77512565eb1",
-        user_name: "caleb",
-        email: "baraka606@student.mmarau.ac.ke",
       },
     };
 
@@ -279,13 +276,51 @@ describe("users controller", () => {
       status: jest.fn().mockReturnThis(),
     };
 
-    await updateUser(request as any, response as any);
+    await deleteUser(request as any, response as any);
 
-   
-    expect(response.status).toHaveBeenCalledWith(500);
-    expect(response.send).toHaveBeenCalledWith({
-      error: "Test error",
-      message: "Internal Sever Error",
+    expect(execute).toHaveBeenCalledWith("deleteUser", {
+      club_id: "1a913633-c923-4228-8efd-a77512565eb1",
     });
+
+    expect(response.status).toHaveBeenCalledWith(201);
+    expect(response.send).toHaveBeenCalledWith({
+      message: "User deleted Successfully",
+    });
+  });
+
+  test("handle validation error", async () => {
+    const request = {
+      params: {
+        // Invalid data to trigger validation error
+      },
+    };
+
+    const response = {
+      send: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    };
+
+    await deleteUser(request as any, response as any);
+
+    expect(response.status).toHaveBeenCalledWith(400);
+    expect(response.send).toHaveBeenCalledWith({ error: "Id is required" });
+  });
+
+  test("handle missing id & ", async () => {
+    const request = {
+      params: {
+        // No club_id provided to trigger missing id error
+      },
+    };
+
+    const response = {
+      send: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    };
+
+    await deleteUser(request as any, response as any);
+
+    expect(response.status).toHaveBeenCalledWith(400);
+    expect(response.send).toHaveBeenCalledWith({ error: "Id is required" });
   });
 });
