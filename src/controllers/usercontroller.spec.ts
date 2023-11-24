@@ -281,7 +281,7 @@ describe("users controller", () => {
 
     await updateUser(request as any, response as any);
 
-    // Ensure the response is sent with the correct error message and status code
+   
     expect(response.status).toHaveBeenCalledWith(500);
     expect(response.send).toHaveBeenCalledWith({
       error: "Test error",
